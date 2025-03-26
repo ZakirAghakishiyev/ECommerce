@@ -18,17 +18,47 @@ public class CmdInterface
 {
     public void App(IUserService userService, IProductService productService, IOrderService orderService, ICategoryService categoryService)
     {
-        var user=Enterance(userService);
-        if (user.Role == 0)
+        UserDto user = null;
+        try
         {
-            Admin(userService, productService, orderService, categoryService);   
+            user = Enterance(userService);
         }
-        else
+        catch (Exception ex)
         {
-            Customer(productService, orderService, user);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.ResetColor();
+            Console.WriteLine("Restarting the application...\n");
+            App(userService, productService, orderService, categoryService); // Restart the app
         }
+        try
+        {
 
+            if (user.Role == 0)
+            {
+                Admin(userService, productService, orderService, categoryService);
+            }
+            else
+            {
+                Customer(productService, orderService, user);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.ResetColor();
+            if (user.Role == 0)
+            {
+                Admin(userService, productService, orderService, categoryService);
+            }
+            else
+            {
+                Customer(productService, orderService, user);
+            }
+        }
     }
+
 
     public void Admin(IUserService userService, IProductService productService, IOrderService orderService, ICategoryService categoryService)
     {
@@ -43,7 +73,9 @@ public class CmdInterface
             bool isValid = int.TryParse(Console.ReadLine(), out int input);
             if (!isValid || input > 5)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Invalid Input");
+                Console.ResetColor();
                 continue;
             }
 
@@ -79,7 +111,9 @@ public class CmdInterface
             bool isValid = int.TryParse(Console.ReadLine(), out int input);
             if (!isValid || input > 3)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Invalid Input");
+                Console.ResetColor();
                 continue;
             }
 
@@ -94,11 +128,15 @@ public class CmdInterface
                 isValid = int.TryParse(Console.ReadLine(), out int userId);
                 if (!isValid || userService.GetById(userId) == null)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Invalid User ID");
+                    Console.ResetColor();
                     continue;
                 }
                 userService.Remove(userId);
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("User Deleted Successfully");
+                Console.ResetColor();
             }
             else if (input == 3)
             {
@@ -114,7 +152,9 @@ public class CmdInterface
                 Roles role = (Roles)int.Parse(Console.ReadLine());
 
                 userService.Add(new UserCreateDto { Email = email, Password = password, FirstName=firstname, LastName=lastname, Role=role });
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("User Added Successfully");
+                Console.ResetColor();
             }
             else break;
         }
@@ -132,7 +172,9 @@ public class CmdInterface
             bool isValid = int.TryParse(Console.ReadLine(), out int input);
             if (!isValid || input > 4)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Invalid Input");
+                Console.ResetColor();
                 continue;
             }
 
@@ -146,7 +188,9 @@ public class CmdInterface
                 Console.Write("Enter Category Name: ");
                 string categoryName = Console.ReadLine();
                 categoryService.Add(new CategoryCreateDto { Name = categoryName });
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Category Added Successfully");
+                Console.ResetColor ();
             }
             else if (input == 3)
             {
@@ -154,11 +198,15 @@ public class CmdInterface
                 isValid = int.TryParse(Console.ReadLine(), out int categoryId);
                 if (!isValid || categoryService.GetById(categoryId) == null)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Invalid Category ID");
+                    Console.ResetColor();
                     continue;
                 }
                 categoryService.Remove(categoryId);
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Category Deleted Successfully");
+                Console.ResetColor ();
             }
             else break;
         }
@@ -173,7 +221,9 @@ public class CmdInterface
         bool isValid = int.TryParse(Console.ReadLine(), out int choice);
         if (!isValid || choice > 3)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Invalid Input");
+            Console.ResetColor();
             return;
         }
 
@@ -189,7 +239,9 @@ public class CmdInterface
                 Console.Write("Price: ");
                 decimal price = decimal.Parse(Console.ReadLine());
                 productService.Add(new ProductCreateDto { Name = name, CategoryId = category, Price = price, Description=description });
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Product added successfully.");
+                Console.ResetColor();
                 break;
 
             case 2:
@@ -198,20 +250,26 @@ public class CmdInterface
                 var product = productService.GetById(productId);
                 if (product == null)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Product not found.");
+                    Console.ResetColor();
                     return;
                 }
                 Console.Write("New Price: ");
                 product.Price = decimal.Parse(Console.ReadLine());
                 productService.Update(new ProductUpdateDto { Id=product.Id, CategoryId=product.Category.Id, Description=product.Description, Name=product.Name, Price=product.Price});
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Product updated successfully.");
+                Console.ResetColor();
                 break;
 
             case 3:
                 Console.Write("Product ID to remove: ");
                 int removeId = int.Parse(Console.ReadLine());
                 productService.Remove(removeId);
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Product removed successfully.");
+                Console.ResetColor();
                 break;
         }
     }
@@ -230,7 +288,9 @@ public class CmdInterface
         var selectedOrder = orderService.GetById(orderId);
         if (selectedOrder == null)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Invalid Order ID.");
+            Console.ResetColor();
             return;
         }
         Console.Write("New Status (Pending, Shipped, Delivered): ");
@@ -258,7 +318,9 @@ public class CmdInterface
             bool isValid = int.TryParse(Console.ReadLine(), out int input);
             if (!isValid || input > 6)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Invalid Input");
+                Console.ResetColor ();
                 continue;
             }
 
@@ -270,7 +332,9 @@ public class CmdInterface
                 isValid = int.TryParse(Console.ReadLine(), out int inputForSearch);
                 if (!isValid || inputForSearch > 3)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Invalid Input");
+                    Console.ResetColor ();
                     continue;
                 }
                 if (inputForSearch == 1)
@@ -280,7 +344,9 @@ public class CmdInterface
                     List<ProductDto> products = productService.GetAll(x => x.Category.Name == category, true);
                     if (products == null || !products.Any())
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Invalid input!!!");
+                        Console.ResetColor();
                         continue;
                     }
                     Printer.ProductsPrinter(products);
@@ -292,7 +358,9 @@ public class CmdInterface
                     List<ProductDto> products = productService.GetAll(x => x.Name == name, true);
                     if (products == null || !products.Any())
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Invalid input!!!");
+                        Console.ResetColor ();
                         continue;
                     }
                     Printer.ProductsPrinter(products);
@@ -321,7 +389,9 @@ public class CmdInterface
         bool isProduct = int.TryParse(Console.ReadLine(), out int productId);
         if (!isProduct || productService.GetById(productId) == null)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Invalid product ID.");
+            Console.ResetColor ();
             return;
         }
 
@@ -329,7 +399,9 @@ public class CmdInterface
         isProduct = int.TryParse(Console.ReadLine(), out int count);
         if (!isProduct || count <= 0)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Invalid quantity.");
+            Console.ResetColor ();
             return;
         }
 
@@ -358,7 +430,10 @@ public class CmdInterface
 
         orderService.Add(ConvertBasketToOrder(basket, user));
         basket.BasketItems.Clear();
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Order has been successfully completed!");
+        Console.ResetColor();
+        Printer.BasketPrinter(basket);
     }
 
     public void CheckDiscountAvailability(UserDto user)
@@ -393,7 +468,9 @@ public class CmdInterface
         bool isValid = int.TryParse(Console.ReadLine(), out int input);
         if (!isValid || input > 2 || input < 1)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Invalid Input. Please enter 1 or 2.");
+            Console.ResetColor();
             return;
         }
 
@@ -415,7 +492,9 @@ public class CmdInterface
             bool isValid = int.TryParse(Console.ReadLine(), out int input);
             if (!isValid || input > 2)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Invalid Input");
+                Console.ResetColor();
                 continue;
             }
        
@@ -469,7 +548,12 @@ public class CmdInterface
         bool firstTime= true;
         do
         {
-            if(!firstTime) Console.WriteLine("Invalid Email!!!");
+            if (!firstTime)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid Email!!!");
+                Console.ResetColor();
+            }
             firstTime = false;
             Console.Write("Email: ");
             email = Console.ReadLine();
@@ -479,7 +563,9 @@ public class CmdInterface
         Roles role = Roles.Customer;
         var user = new UserDto { Email = email, FirstName = firstname, LastName = lastname, Role = role };
         userService.Add(new UserCreateDto { Email = email, FirstName = firstname, LastName = lastname, Password = password, Role = role });
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Account has been successfully created");
+        Console.ResetColor();
         return user;
     }
 
