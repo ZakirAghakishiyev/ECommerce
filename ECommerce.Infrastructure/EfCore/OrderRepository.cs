@@ -16,7 +16,9 @@ public class OrderRepository : EfCoreRepository<Order>, IOrderRepository
     {
         var order = _context.Orders
             .Include(o => o.Items)
+            .ThenInclude(o => o.Product).ThenInclude(o => o.Category)
             .Include(o => o.User)
+            .AsNoTracking()
             .FirstOrDefault(predicate);
         return order;
     }
@@ -25,7 +27,9 @@ public class OrderRepository : EfCoreRepository<Order>, IOrderRepository
     {
         var order = _context.Orders
             .Include(o => o.Items)
+            .ThenInclude(o => o.Product).ThenInclude(o => o.Category)
             .Include(o => o.User)
+            .AsNoTracking()
             .FirstOrDefault(x=>x.Id==id);
         return order;
     }
@@ -35,6 +39,8 @@ public class OrderRepository : EfCoreRepository<Order>, IOrderRepository
         var orders= _context.Orders
             .Include(x=>x.User)
             .Include(x=>x.Items)
+            .ThenInclude(o => o.Product).ThenInclude(o=>o.Category)
+            .AsNoTracking()
             .ToList();
         return orders;
     }

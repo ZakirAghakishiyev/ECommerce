@@ -14,6 +14,7 @@ namespace ECommerce.Application.DTOs
 
     public class BasketItemDto
     {
+        public int ProductId { get; set; }
         public ProductDto? Product { get; set; }
         public int Count { get; set; }
     }

@@ -24,16 +24,9 @@ public class OrderManager : IOrderService
             Status = createDto.Status,
             Items = createDto.Items.Select(x => new OrderItem
             {
-                Id = x.Id,
-                Product = new Product
-                {
-                    Id = x.Product.Id,
-                    Name = x.Product.Name,
-                    Category = new Category { Id = x.Product.Category.Id, Name = x.Product.Category.Name },
-                    Price = x.Product.Price,
-                    Description = x.Product.Description
-                },
-                Count = x.Count
+                ProductId = x.ProductId,
+                Count = x.Count,
+                TotalPrice = x.TotalPrice,
             }).ToList()
         };
 

@@ -18,6 +18,7 @@ public class ProductRepository : EfCoreRepository<Product>, IProductRepository
     {
         var product = _context.Products
             .Include(o => o.Category)
+            .AsNoTracking()
             .FirstOrDefault(predicate);
         return product;
     }
@@ -26,6 +27,7 @@ public class ProductRepository : EfCoreRepository<Product>, IProductRepository
     {
         var product = _context.Products
             .Include(o => o.Category)
+            .AsNoTracking()
             .FirstOrDefault(x=>x.Id==id);
         return product;
     }
@@ -33,7 +35,9 @@ public class ProductRepository : EfCoreRepository<Product>, IProductRepository
     public override List<Product> GetAll(Expression<Func<Product, bool>>? predicate = null, bool asNoTracking = false)
     {
         // Start with IQueryable
-        IQueryable<Product> query = _context.Products.Include(x => x.Category);
+        IQueryable<Product> query = _context.Products
+            .Include(x => x.Category)
+            .AsNoTracking();
 
         // Apply predicate if provided
         if (predicate != null)

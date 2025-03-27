@@ -424,7 +424,9 @@ public class CmdInterface
     {
         if (!basket.BasketItems.Any())
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Your basket is empty. Please add items before proceeding.");
+            Console.ResetColor ();
             return;
         }
 
@@ -456,7 +458,9 @@ public class CmdInterface
     {
         if (!basket.BasketItems.Any())
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Your basket is empty.");
+            Console.ResetColor ();
             return;
         }
 
@@ -584,16 +588,18 @@ public class CmdInterface
     {
         if (basket == null || basket.BasketItems == null || !basket.BasketItems.Any())
         {
-            throw new ArgumentException("Basket is empty or null.");
+            Console.ForegroundColor=ConsoleColor.Red;
+            Console.WriteLine("Basket is empty or null.");
+            Console.ResetColor();
         }
         decimal discount = 1m;
         if (user.Orders.Count() == 0 || user.Orders.Count() % 5 == 4) discount = 0.8m;
         return new OrderCreateDto
         {
             UserId = user.Id,
-            Items = basket.BasketItems.Select(b => new OrderItemDto
+            Items = basket.BasketItems.Select(b => new OrderItemCreateDto
             {
-                Product = b.Product,
+                ProductId= b.ProductId,
                 Count = b.Count
             }).ToList(),
             Status = Status.Pending,

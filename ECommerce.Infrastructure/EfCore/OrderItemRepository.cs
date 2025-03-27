@@ -27,7 +27,7 @@ public class OrderItemRepository : EfCoreRepository<OrderItem>, IOrderItemReposi
     {
         var order = _context.OrderItems
             .AsNoTracking()
-            .Include(o => o.Product)
+            .Include(o => o.Product).ThenInclude(o => o.Category)
             .Include(o => o.Order)
             .FirstOrDefault(x => x.Id == id);
         return order;
@@ -37,7 +37,7 @@ public class OrderItemRepository : EfCoreRepository<OrderItem>, IOrderItemReposi
     {
         var orderItems = _context.OrderItems
              .AsNoTracking()
-             .Include(o => o.Product)
+             .Include(o => o.Product).ThenInclude(o => o.Category)
              .Include(o => o.Order)
              .ToList();
         return orderItems;

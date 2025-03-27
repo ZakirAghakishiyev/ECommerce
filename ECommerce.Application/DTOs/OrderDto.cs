@@ -23,7 +23,7 @@ namespace ECommerce.Application.DTOs
     public class OrderCreateDto
     {
         public int UserId { get; set; }
-        public List<OrderItemDto> Items { get; set; } = [];
+        public List<OrderItemCreateDto> Items { get; set; } = [];
         public Status Status { get; set; }
         public decimal? TotalPrice { get; set; }
     }
