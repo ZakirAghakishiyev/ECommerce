@@ -2,13 +2,14 @@
 using ECommerce.Domain.Interfaces;
 using ECommerce.Infrastructure.EfCore.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace ECommerce.Infrastructure.EfCore;
 
 public class EfCoreRepository<T> : IRepository<T> where T : Entity
 {
-    protected readonly AppDbContext _context;
+    private readonly AppDbContext _context;
 
     public EfCoreRepository(AppDbContext context)
     {
@@ -17,30 +18,38 @@ public class EfCoreRepository<T> : IRepository<T> where T : Entity
 
     public virtual void Add(T entity)
     {
-        var existingEntity = _context.Set<T>().FirstOrDefault(e => e.Id == entity.Id);
-
-        if (existingEntity == null)
-        {
-            _context.Set<T>().Add(entity);
-            _context.SaveChanges();
-        }
-        
+        _context.Set<T>().Add(entity);
+        _context.SaveChanges();
     }
 
-
-    public virtual T Get(Expression<Func<T, bool>> predicate)
+    public virtual T Get(Expression<Func<T, bool>>? predicate = null, bool asNoTracking = false,
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null)
     {
-        T entity = _context.Set<T>().FirstOrDefault(predicate);
+        IQueryable<T> queryable = _context.Set<T>();
 
-        return entity;
+        if (include != null)
+            queryable = include(queryable);
+
+        if (!asNoTracking)
+            queryable = queryable.AsNoTracking();
+
+        return queryable.FirstOrDefault(predicate);
     }
 
-    public virtual List<T> GetAll(Expression<Func<T, bool>>? predicate = null, bool asNoTracking = false)
+    public virtual List<T> GetAll(Expression<Func<T, bool>>? predicate = null, bool asNoTracking = false,
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
     {
         IQueryable<T> queryable = _context.Set<T>();
 
         if (predicate != null)
             queryable = queryable.Where(predicate);
+
+        if (include != null)
+            queryable = include(queryable);
+
+        if (orderBy != null)
+            queryable = orderBy(queryable);
 
         if (!asNoTracking)
             queryable = queryable.AsNoTracking();
