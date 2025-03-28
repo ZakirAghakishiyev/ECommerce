@@ -1,4 +1,5 @@
 ﻿using ECommerce.Application.DTOs;
+using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,7 +14,7 @@ namespace ECommerce.UI
 {
     public static class Printer
     {
-        public static void BasketPrinter(BasketDto basket)
+        public static void BasketPrinter(BasketDto basket, IProductService productService)
         {
             int no = 1;
             decimal? sum= 0m;
@@ -24,10 +25,10 @@ namespace ECommerce.UI
             }
             foreach(var item in basket.BasketItems)
             {
-                var ItemPrice = item.Count * item.Product.Price;
+                var ItemPrice = item.Count * productService.GetById(item.ProductId).Price;
                 sum += ItemPrice;
                 Console.WriteLine($"No: {no++}");
-                ProductPrinter(item.Product);
+                ProductPrinter(productService.GetById(item.ProductId));
                 Console.WriteLine($"Quantity: {item.Count}");
                 Console.WriteLine($"Total: {ItemPrice}");
                 Console.WriteLine(new string('-',95));

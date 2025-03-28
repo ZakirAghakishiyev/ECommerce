@@ -1,5 +1,6 @@
 ﻿using ECommerce.Application.DTOs;
 using ECommerce.Application.Interfaces;
+using ECommerce.Application.Services;
 using ECommerce.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -372,7 +373,7 @@ public class CmdInterface
             }
             else if (input == 2) AddToBasket(productService, basket);
                
-            else if (input == 3) ViewBasket(user, basket, orderService);
+            else if (input == 3) ViewBasket(user, basket, orderService, productService);
             
             else if (input == 4) Printer.DetailedOrdersPrinter(orderService.GetAll(x => x.User.Id == user.Id, false));
             
@@ -406,21 +407,21 @@ public class CmdInterface
         }
 
         var product = productService.GetById(productId);
-        var existingItem = basket.BasketItems.FirstOrDefault(b => b.Product.Id == productId);
+        var existingItem = basket.BasketItems.FirstOrDefault(b => b.ProductId == productId);
         if (existingItem != null)
         {
             existingItem.Count += count;
         }
         else
         {
-            basket.BasketItems.Add(new BasketItemDto { Product = product, Count = count });
+            basket.BasketItems.Add(new BasketItemDto { ProductId = productId, Count = count });
         }
 
         Console.WriteLine($"{count} x {product.Name} added to basket.");
-        Printer.BasketPrinter(basket);
+        Printer.BasketPrinter(basket, productService);
     }
 
-    public void OrderCompletion(UserDto user, BasketDto basket, IOrderService orderService)
+    public void OrderCompletion(UserDto user, BasketDto basket, IOrderService orderService, IProductService productService)
     {
         if (!basket.BasketItems.Any())
         {
@@ -430,12 +431,12 @@ public class CmdInterface
             return;
         }
 
-        orderService.Add(ConvertBasketToOrder(basket, user));
+        orderService.Add(ConvertBasketToOrder(basket, user, productService));
         basket.BasketItems.Clear();
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Order has been successfully completed!");
         Console.ResetColor();
-        Printer.BasketPrinter(basket);
+        Printer.BasketPrinter(basket, productService);
     }
 
     public void CheckDiscountAvailability(UserDto user)
@@ -454,7 +455,7 @@ public class CmdInterface
     }
 
 
-    public void ViewBasket(UserDto user, BasketDto basket, IOrderService orderService)
+    public void ViewBasket(UserDto user, BasketDto basket, IOrderService orderService, IProductService productService)
     {
         if (!basket.BasketItems.Any())
         {
@@ -464,7 +465,7 @@ public class CmdInterface
             return;
         }
 
-        Printer.BasketPrinter(basket);
+        Printer.BasketPrinter(basket, productService);
         Console.WriteLine("1. Buy");
         Console.WriteLine("2. Back to Home");
         Console.Write("Choose an option: ");
@@ -480,7 +481,7 @@ public class CmdInterface
 
         if (input == 1)
         {
-            OrderCompletion(user, basket, orderService);
+            OrderCompletion(user, basket, orderService, productService);
             Printer.DetailedOrdersPrinter(orderService.GetAll(x => x.UserId == user.Id, false));
         }
     }
@@ -573,18 +574,18 @@ public class CmdInterface
         return user;
     }
 
-    public static decimal? PriceCalculator(BasketDto basket)
+    public static decimal? PriceCalculator(BasketDto basket, IProductService productManager)
     {
         decimal? sum = 0m;
         foreach(var item in basket.BasketItems)
         {
-            var ItemPrice = item.Count * item.Product.Price;
+            var ItemPrice = item.Count * productManager.GetById(item.ProductId).Price;
             sum += ItemPrice;
         }
         return sum;
     }
 
-    public static OrderCreateDto ConvertBasketToOrder(BasketDto basket, UserDto user)
+    public static OrderCreateDto ConvertBasketToOrder(BasketDto basket, UserDto user, IProductService productManager)
     {
         if (basket == null || basket.BasketItems == null || !basket.BasketItems.Any())
         {
@@ -603,7 +604,7 @@ public class CmdInterface
                 Count = b.Count
             }).ToList(),
             Status = Status.Pending,
-            TotalPrice = PriceCalculator(basket) * discount
+            TotalPrice = PriceCalculator(basket, productManager) * discount
         };
         
     }
